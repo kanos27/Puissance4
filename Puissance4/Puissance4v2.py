@@ -131,7 +131,7 @@ class Grid:
     return 
     '''
     def JouerPion(self, positionPion, player) -> Grid:
-        newGrid = self
+        newGrid = self.copyGrid()
         is_placed = False
         colonne = newGrid.grid[positionPion]
         case = len(colonne) - 1
@@ -174,6 +174,15 @@ class Grid:
         
         return is_placable
 
+
+    def copyGrid(self) -> Grid:
+        newGrid = Grid()
+
+        for i in range(len(self.grid)):
+            for j in range(len(self.grid[i])):
+                newGrid[i][j] = self.grid[i][j]
+        
+        return newGrid
 
 
 class Player():
