@@ -25,14 +25,14 @@ class Grid:
         return etat
 
 
-    def getGrid(self) -> Grid: #nécéssaire ?
+    def getGrid(self) -> 'Grid': #nécéssaire ?
         return self.grid
 
     '''
     boolean qui retourne vrai si le jeton donné amene la victoire 
     param : positionPion -> la colonne ou le pion à été posé (au dessus)
     '''
-    def estGagne(self, positionPion) -> bool:
+    def estPionGagnant(self, positionPion) -> bool:
         #idee un peu degueu:
         #verif de ligne de chaque coté, avec conteur du nombre de case correct,
         #puis de colonnes, meme process,
@@ -42,43 +42,45 @@ class Grid:
         #code actuel : un peu une horreur, à refaire ?
 
         case = len(self.grid[positionPion]) -1
-        while case >= 0 and self.grid[positionPion][case] != self.player :
+        while case >= 0 and self.grid[positionPion][case] == self._CASE_VIDE :
             case -=1
             
-        if self.grid[positionPion][case] != self.player:
-            print("DEBUG  estGagne: pas de pion du joueur en cours trouvé")
+        if self.grid[positionPion][case] == self._CASE_VIDE:
+            print("DEBUG estPionGagnant: pas de pion du joueur en cours trouvé")
             return False
+        else:
+            player = self.grid[positionPion][case]
         
         #verif colonne (visuellement; en calcul, verif ligne)
         val_longueur = 1
         eloignement = 1
-        while (case - eloignement >= 0 ) and self.grid[positionPion][case - eloignement] == self.player:
+        while (case - eloignement >= 0 ) and self.grid[positionPion][case - eloignement] == player:
             eloignement += 1
             val_longueur += 1
 
         eloignement = 1
-        while ( eloignement < len(self.grid[positionPion])-case ) and self.grid[positionPion][case + eloignement] == self.player:
+        while ( eloignement < len(self.grid[positionPion])-case ) and self.grid[positionPion][case + eloignement] == player:
             eloignement += 1
             val_longueur += 1
 
         if val_longueur >= 4:
-            print("DEBUG estGagne : colonne (en code ligne) gagnante")
+            print("DEBUG estPionGagnant : colonne (en code ligne) gagnante")
             return True
 
         #verif ligne (visuellement; en calcul, verif colonne)
         val_longueur = 1
         eloignement = 1
-        while ( positionPion - eloignement >= 0  ) and self.grid[positionPion - eloignement ][case] == self.player:
+        while ( positionPion - eloignement >= 0  ) and self.grid[positionPion - eloignement ][case] == player:
             eloignement += 1
             val_longueur += 1
 
         eloignement = 1
-        while ( eloignement < len(self.grid) - positionPion ) and self.grid[positionPion + eloignement][case] == self.player:
+        while ( eloignement < len(self.grid) - positionPion ) and self.grid[positionPion + eloignement][case] == player:
             eloignement += 1
             val_longueur += 1
 
         if val_longueur >= 4:
-            print("DEBUG estGagne : ligne (en code colonne) gagnante")
+            print("DEBUG estPionGagnant : ligne (en code colonne) gagnante")
             return True
 
 
@@ -86,38 +88,46 @@ class Grid:
         #diag 1
         val_longueur = 1
         eloignement = 1
-        while ( case - eloignement >= 0 and positionPion - eloignement >= 0 ) and self.grid[positionPion - eloignement ][case - eloignement] == self.player:
+        while ( case - eloignement >= 0 and positionPion - eloignement >= 0 ) and self.grid[positionPion - eloignement ][case - eloignement] == player:
             eloignement += 1
             val_longueur += 1
 
         eloignement = 1
-        while ( eloignement < len(self.grid[positionPion]) - case and  eloignement < len(self.grid) - positionPion) and self.grid[positionPion + eloignement][case + eloignement] == self.player:
+        while ( eloignement < len(self.grid[positionPion]) - case and  eloignement < len(self.grid) - positionPion) and self.grid[positionPion + eloignement][case + eloignement] == player:
             eloignement += 1
             val_longueur += 1
 
         if val_longueur >= 4:
-            print("DEBUG estGagne : Diagonale 1 gagnante")
+            print("DEBUG estPionGagnant : Diagonale 1 gagnante")
             return True
 
         #diag 2
         val_longueur = 1
         eloignement = 1
-        while ( eloignement < len(self.grid[positionPion]) - case and positionPion - eloignement >= 0 ) and self.grid[positionPion - eloignement ][case + eloignement] == self.player:
+        while ( eloignement < len(self.grid[positionPion]) - case and positionPion - eloignement >= 0 ) and self.grid[positionPion - eloignement ][case + eloignement] == player:
             eloignement += 1
             val_longueur += 1
 
         eloignement = 1
-        while ( case - eloignement >= 0 and eloignement < len(self.grid) - positionPion) and self.grid[positionPion + eloignement][case - eloignement] == self.player:
+        while ( case - eloignement >= 0 and eloignement < len(self.grid) - positionPion) and self.grid[positionPion + eloignement][case - eloignement] == player:
             eloignement += 1
             val_longueur += 1
 
         if val_longueur >= 4:
-            print("DEBUG estGagne : Diagonale 2 gagnante")
+            print("DEBUG estPionGagnant : Diagonale 2 gagnante")
             return True
 
         return False
 
-    def comparerGrid(self, other: Grid) -> bool: # grid ne passe pas ?
+    def estGridGagnant(self) -> bool:
+        est_gagne = False
+        for i in range(len(self.grid)):
+            if self.estPionGagnant(i): # verifie tous les derniers pions de colonnes
+                est_gagne = True
+
+        return est_gagne
+
+    def comparerGrid(self, other: 'Grid') -> bool: # grid ne passe pas ?
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
                 if self.grid[i][j] != other.grid[i][j]: # pas la meilleure méthode, car return dans for. Serait mieux avec while je crois.
@@ -130,7 +140,7 @@ class Grid:
     param positionPion = la colonne ou le pion doit être placé
     return 
     '''
-    def JouerPion(self, positionPion, player) -> Grid:
+    def placerPion(self, positionPion: int, player: 'Player') -> 'Grid':
         newGrid = self.copyGrid()
         is_placed = False
         colonne = newGrid.grid[positionPion]
@@ -175,12 +185,12 @@ class Grid:
         return is_placable
 
 
-    def copyGrid(self) -> Grid:
+    def copyGrid(self) -> 'Grid':
         newGrid = Grid()
 
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
-                newGrid[i][j] = self.grid[i][j]
+                newGrid.grid[i][j] = self.grid[i][j]
         
         return newGrid
 
@@ -194,17 +204,30 @@ class Player():
         pass
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
         
     '''
     Fait jouer le joueur : prend le terrain actuel du jeu et retourne la position de la colonne que le joueur à choisit (dépend du type de joueur)
     '''
-    def playTurn(self, Grid) -> int:
+    def playTurn(self, curr_grid) -> int:
         #prend un terrain en attribut, et ressort une valeur, le move qu'il souhaite jouer
         #pour cela, en fonction du tape de joueur demande a l'humain, ou a l'ia
-        move = 0
+        move = self.inputJoueur(curr_grid)
 
         return move
+
+    '''
+    se charge de l'input des joueur, retourne la colonne selectionnée
+    return : positionChoix : int de la colonne choisie
+    '''
+    def inputJoueur(self, curr_grid) -> int:
+        #on commence à -1 pour l'effectuer au moins une fois
+        positionChoix = -1
+        while (positionChoix < 0 or positionChoix > len(curr_grid.grid) -1):
+            #a ameliorer : partie affichage dediée
+            positionChoix = int(input(f"Joueur {self.value}, sur quelle colonne souhaitez-vous placer votre pion ? /n>"))
+        return positionChoix
+        ...
 
 
 class Jeu:
@@ -217,7 +240,10 @@ class Jeu:
 
         self.curr_grid = Grid()
 
-        self.curr_player = 0 # à changer
+
+        self.player1 = Player(1)
+        self.player2 = Player(2)
+        self.curr_player = self.player1 # à changer
         pass
 
     '''
@@ -243,25 +269,25 @@ class Jeu:
         while not self.curr_grid.estRemplis() and not est_gagne:
             #a ameliorer : partie affichage dediée
             print(self)
-            choixJoueur = self.inputJoueur()
+            choixJoueur = self.curr_player.playTurn(self.curr_grid)
             print("DEBUG boucleJeu : inputJoueur() passé")
             while not self.curr_grid.estPlacable(choixJoueur):
                 
                 #a ameliorer : partie affichage dediée
                 print("le pion n'est pas placable à cet endroit, veuillez réessayer.")
-                choixJoueur = self.inputJoueur()
+                choixJoueur = self.curr_player.playTurn(self.curr_grid)
             
-            self.curr_grid.placerPion(choixJoueur)
-            est_gagne = self.estGagne(choixJoueur)
+            self.curr_grid = self.curr_grid.placerPion(choixJoueur, self.curr_player)
+            est_gagne = self.curr_grid.estPionGagnant(choixJoueur)
 
-            if not est_gagne and not self.estRemplis():
+            if not est_gagne and (not self.curr_grid.estRemplis()) :
                 self.jSuivant()
         
         print("partie finie !")
-        if self.estRemplis():
+        if self.curr_grid.estRemplis():
             print("Le terrain est entièrement remplis, il y a donc égalité.")
         else :
-            print(f"le gagnant est joueur {self.player}, félicitation !")
+            print(f"le gagnant est joueur {self.curr_player}, félicitation !")
 
         ...
 
@@ -271,24 +297,12 @@ class Jeu:
     change le joueur en cours
     '''
     def jSuivant(self) -> None:
-        if self.player == 1:
-            self.player = 2
+        if self.curr_player == self.player1:
+            self.curr_player = self.player2
         else: 
-            self.player = 1
+            self.curr_player = self.player1
 
 
-    '''
-    se charge de l'input des joueur, retourne la colonne selectionnée
-    return : positionChoix : int de la colonne choisie
-    '''
-    def inputJoueur(self) -> int:
-        #on commence à -1 pour l'effectuer au moins une fois
-        positionChoix = -1
-        while (positionChoix < 0 or positionChoix > len(self.grid) -1):
-            #a ameliorer : partie affichage dediée
-            positionChoix = int(input(f"Joueur {self.player}, sur quelle colonne souhaitez-vous placer votre pion ? /n>"))
-        return positionChoix
-        ...
     
 
 
@@ -298,31 +312,35 @@ class Jeu:
 if __name__ == "__main__":
     jeu = Jeu()
     print(jeu)
-    print(jeu.estPlacable(3))
-    jeu.placerPion(3)  
-    print(jeu)
+    #print(jeu.estPlacable(3))
+    #jeu.placerPion(3)  
+    #print(jeu)
     #jeu.grid[1][2] = 1
     #print(jeu)
 
-    jeu.placerPion(2)
-    print(jeu)
-    jeu.placerPion(1)
-    print(jeu)
-    jeu.placerPion(4)
-    print(jeu)
-    print(jeu.estGagne(4))
+    #jeu.placerPion(2)
+    #print(jeu)
+    #jeu.placerPion(1)
+    #print(jeu)
+    #jeu.placerPion(4)
+    #print(jeu)
+    #print(jeu.estGagne(4))
 
-    print("DEBUG MAIN : TEST : verification des cas de gagne :")
-    jeu2 = Jeu()
-    jeu2.grid[1][5] = 1
-    jeu2.grid[2][4] = 1
-    jeu2.grid[3][3] = 1
-    jeu2.grid[4][2] = 1
-    print(jeu2)
-    print(jeu2.estGagne(1))
+    # print("DEBUG MAIN : TEST : verification des cas de gagne :")
+    # jeu2 = Jeu()
+    # jeu2.grid[1][5] = 1
+    # jeu2.grid[2][4] = 1
+    # jeu2.grid[3][3] = 1
+    # jeu2.grid[4][2] = 1
+    # print(jeu2)
+    # print(jeu2.estGagne(1))
 
-    print("DEBUG MAIN : FIN TESTS : verifications de cas gagne")
+    # print("DEBUG MAIN : FIN TESTS : verifications de cas gagne")
     print("DEBUG MAIN : DEBUT TEST : partie complete :")
-    jeu3 = Jeu()
-    #print(jeu3.estRemplis())
-    jeu3.boucleJeu()
+    # jeu3 = Jeu()
+    # #print(jeu3.estRemplis())
+    # jeu3.boucleJeu()
+
+    jeu.boucleJeu()
+
+    print("DEBUG MAIN : FIN DES TESTS")
