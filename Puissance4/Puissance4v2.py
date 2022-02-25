@@ -9,14 +9,14 @@
 
 class Grid:
 
-    def __init__(self):
+    def __init__(self) -> None:
         #constante d'état pour case vide, pour faciliter la vie en cas de changement de nbr pour vide et joueur
         self._CASE_VIDE = 0
 
         self.grid = [[self._CASE_VIDE for i in range(6)] for j in range(7)]
         pass
 
-    def __str__(self):
+    def __str__(self) -> str:
         etat = ""
         for i in range(len(self.grid[0])):
             etat += "\n"
@@ -25,14 +25,14 @@ class Grid:
         return etat
 
 
-    def getGrid(self): #nécéssaire ?
+    def getGrid(self) -> Grid: #nécéssaire ?
         return self.grid
 
     '''
     boolean qui retourne vrai si le jeton donné amene la victoire 
     param : positionPion -> la colonne ou le pion à été posé (au dessus)
     '''
-    def estGagne(self, positionPion):
+    def estGagne(self, positionPion) -> bool:
         #idee un peu degueu:
         #verif de ligne de chaque coté, avec conteur du nombre de case correct,
         #puis de colonnes, meme process,
@@ -117,7 +117,7 @@ class Grid:
 
         return False
 
-    def comparerGrid(self, other: Grid): # grid ne passe pas ?
+    def comparerGrid(self, other: Grid) -> bool: # grid ne passe pas ?
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
                 if self.grid[i][j] != other.grid[i][j]: # pas la meilleure méthode, car return dans for. Serait mieux avec while je crois.
@@ -130,7 +130,7 @@ class Grid:
     param positionPion = la colonne ou le pion doit être placé
     return 
     '''
-    def JouerPion(self, positionPion, player):
+    def JouerPion(self, positionPion, player) -> Grid:
         newGrid = self
         is_placed = False
         colonne = newGrid.grid[positionPion]
@@ -148,7 +148,7 @@ class Grid:
     '''
     boolean qui retourne vrai si le terrain est entierement remplis
     '''
-    def estRemplis(self):
+    def estRemplis(self) -> bool:
         remplis = True
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
@@ -156,24 +156,41 @@ class Grid:
                     remplis = False
         return remplis
     
+    '''
+    Indique si une position donnée est correcte ou non, aka si un pion est placable
+    param : positionPion -> la position donnée de placement de pion
+    return : boolean -> si la position est correcte ou non
+    '''
+    def estPlacable(self, positionPion) -> bool:
+        is_placable = False
+        case = len(self.grid[positionPion]) -1
+        while not is_placable and case >= 0:
+            #print("DEBUG  estPlacable: val case : " + str(case))
+            #print("DEBUG  estPlacable: self.grid[positionPion][case] : " + str(self.grid[positionPion][case]))
+            if self.grid[positionPion][case] == self._CASE_VIDE:
+                #print("DEBUG  estPlacable: est dans if" )
+                is_placable = True
+            case -= 1
+        
+        return is_placable
 
 
 
 class Player():
 
-    def __init__(self, value): # est-ce correct ?
+    def __init__(self, value) -> None: # est-ce correct ?
         # boolean is_ia ?
         self.value = value
 
         pass
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
         
     '''
     Fait jouer le joueur : prend le terrain actuel du jeu et retourne la position de la colonne que le joueur à choisit (dépend du type de joueur)
     '''
-    def playTurn(self, Grid):
+    def playTurn(self, Grid) -> int:
         #prend un terrain en attribut, et ressort une valeur, le move qu'il souhaite jouer
         #pour cela, en fonction du tape de joueur demande a l'humain, ou a l'ia
         move = 0
@@ -187,22 +204,24 @@ class Jeu:
 
     probleme actuel : grille en format ligne-colonne et non colonne-ligne
     '''
-    def __init__(self):
+    def __init__(self) -> None:
 
         self.curr_grid = Grid()
+
+        self.curr_player = 0 # à changer
         pass
 
     '''
     retourne un string montrant l'etat du jeu, avec une indication du joueur et de l'etat de la grille
     '''
-    def __str__(self) :
+    def __str__(self) -> str:
         etat = ""
-        etat += "joueur : " + str(self.player) + "\n" + "grille :"
-        #etat += str(Grid)
+        etat += "joueur : " + str(self.curr_player) + "\n" + "grille :"
+        etat += str(self.curr_grid)
         return etat
 
 
-    def boucleJeu(self):
+    def boucleJeu(self) -> None:
         #input du joueur
         #verification de l'input et redemande jusqu'à bon
         #place pion
@@ -212,18 +231,18 @@ class Jeu:
         #puis changement de joueur, et on recommence
 
         est_gagne = False
-        while not self.estRemplis() and not est_gagne:
+        while not self.curr_grid.estRemplis() and not est_gagne:
             #a ameliorer : partie affichage dediée
             print(self)
             choixJoueur = self.inputJoueur()
             print("DEBUG boucleJeu : inputJoueur() passé")
-            while not self.estPlacable(choixJoueur):
+            while not self.curr_grid.estPlacable(choixJoueur):
                 
                 #a ameliorer : partie affichage dediée
                 print("le pion n'est pas placable à cet endroit, veuillez réessayer.")
                 choixJoueur = self.inputJoueur()
             
-            self.placerPion(choixJoueur)
+            self.curr_grid.placerPion(choixJoueur)
             est_gagne = self.estGagne(choixJoueur)
 
             if not est_gagne and not self.estRemplis():
@@ -238,29 +257,11 @@ class Jeu:
         ...
 
 
-    '''
-    Indique si une position donnée est correcct ou non, aka si un pion est placable
-    param : positionPion -> la position donnée de placement de pion
-    return : boolean -> si la position est correcte ou non
-    '''
-    def estPlacable(self, positionPion):
-        is_placable = False
-        case = len(self.grid[positionPion]) -1
-        while not is_placable and case >= 0:
-            #print("DEBUG  estPlacable: val case : " + str(case))
-            #print("DEBUG  estPlacable: self.grid[positionPion][case] : " + str(self.grid[positionPion][case]))
-            if self.grid[positionPion][case] == self._CASE_VIDE:
-                #print("DEBUG  estPlacable: est dans if" )
-                is_placable = True
-            case -= 1
-        
-        return is_placable
-
 
     '''
     change le joueur en cours
     '''
-    def jSuivant(self):
+    def jSuivant(self) -> None:
         if self.player == 1:
             self.player = 2
         else: 
@@ -268,21 +269,10 @@ class Jeu:
 
 
     '''
-    boolean qui retourne vrai si le terrain est entierement remplis
-    '''
-    def estRemplis(self):
-        remplis = True
-        for i in range(len(self.grid)):
-            for j in range(len(self.grid[i])):
-                if self.grid[i][j] == self._CASE_VIDE:
-                    remplis = False
-        return remplis
-
-    '''
     se charge de l'input des joueur, retourne la colonne selectionnée
     return : positionChoix : int de la colonne choisie
     '''
-    def inputJoueur(self):
+    def inputJoueur(self) -> int:
         #on commence à -1 pour l'effectuer au moins une fois
         positionChoix = -1
         while (positionChoix < 0 or positionChoix > len(self.grid) -1):
