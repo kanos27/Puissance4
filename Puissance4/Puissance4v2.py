@@ -8,7 +8,22 @@
 # version 2 : retravaillage du code pour être plus adapté à la POO
 
 class Grid:
+    """
+    Classe representant la grille de jeu, et les jetons qui s'y situent
 
+    Parameters
+    ----------
+    grid: 2d int array
+        tableau de case du jeu, composé de valeures entieres
+    _CASE_VIDE : int const
+        constante de case vide, permettant d'y attribuer une valeur
+
+    Attributes
+    ----------
+
+    A faire, pas sur de quoi mettre.
+
+    """
     def __init__(self) -> None:
         #constante d'état pour case vide, pour faciliter la vie en cas de changement de nbr pour vide et joueur
         self._CASE_VIDE = 0
@@ -41,9 +56,9 @@ class Grid:
 
         #code actuel : un peu une horreur, à refaire ?
 
-        case = len(self.grid[positionPion]) -1
-        while case >= 0 and self.grid[positionPion][case] == self._CASE_VIDE :
-            case -=1
+        case = 0
+        while case < len(self.grid[positionPion]) and self.grid[positionPion][case] == self._CASE_VIDE :
+            case +=1
             
         if self.grid[positionPion][case] == self._CASE_VIDE:
             print("DEBUG estPionGagnant: pas de pion du joueur en cours trouvé")
@@ -51,15 +66,27 @@ class Grid:
         else:
             player = self.grid[positionPion][case]
         
+        #Debug
+        print(f"DEBUG estPionGagnant: pion vérifié en case ({positionPion}, {case}) appartenant au joueur {player}")
+
+
         #verif colonne (visuellement; en calcul, verif ligne)
         val_longueur = 1
         eloignement = 1
         while (case - eloignement >= 0 ) and self.grid[positionPion][case - eloignement] == player:
+
+            #Debug
+            print(f"DEBUG estPionGagnant: pion vérifié (colone-ligne, partie 1) en case ({positionPion}, {case - eloignement}) appartenant au joueur {player}")
+
             eloignement += 1
             val_longueur += 1
 
         eloignement = 1
         while ( eloignement < len(self.grid[positionPion])-case ) and self.grid[positionPion][case + eloignement] == player:
+
+            #Debug
+            print(f"DEBUG estPionGagnant: pion vérifié (colone-ligne, partie 2) en case ({positionPion}, {case + eloignement}) appartenant au joueur {player}")
+
             eloignement += 1
             val_longueur += 1
 
@@ -71,11 +98,20 @@ class Grid:
         val_longueur = 1
         eloignement = 1
         while ( positionPion - eloignement >= 0  ) and self.grid[positionPion - eloignement ][case] == player:
+            
+            #Debug
+            print(f"DEBUG estPionGagnant: pion vérifié (colone-ligne, partie 3) en case ({positionPion - eloignement}, {case}) appartenant au joueur {player}")
+            
             eloignement += 1
             val_longueur += 1
 
         eloignement = 1
         while ( eloignement < len(self.grid) - positionPion ) and self.grid[positionPion + eloignement][case] == player:
+
+            #Debug
+            print(f"DEBUG estPionGagnant: pion vérifié (colone-ligne, partie 4) en case ({positionPion + eloignement}, {case}) appartenant au joueur {player}")
+
+
             eloignement += 1
             val_longueur += 1
 
