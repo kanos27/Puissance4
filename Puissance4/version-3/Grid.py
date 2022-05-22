@@ -1,4 +1,5 @@
 
+
 # Auteur : Arthur Romary
 # Tentative de creation d'un puissance 4
 # Pas d'affichage visuel, que sur terminal.
@@ -6,6 +7,8 @@
 # le premier qui fait un alignement (horizontal, vertical, diagonal) de quatre de ses jetons gagne
 # taille du quadrillage / grille : 7*6 (L*H)
 # version 2 : retravaillage du code pour être plus adapté à la POO
+
+
 
 class Grid:
     """
@@ -229,3 +232,46 @@ class Grid:
                 newGrid.grid[i][j] = self.grid[i][j]
         
         return newGrid
+
+
+    def genereateAllPlays(self):
+        if self.estRemplis():
+            return []
+
+        plays = []
+        for i in range(len(self.grid)):
+            if self.grid[i][-1] == self._CASE_VIDE:
+                plays.append(i)
+        
+        return plays
+
+    def evaluate(self, player):
+        #il est surement meilleur d'utiliser inf, mais pour l'instant fait sans import math
+        #donc pour l'instant : 0 = rien ; -10 = perdu ; 10 = gagne
+        #par sécu, si les deux ont win, ce qui n'est pas censé arrivé, c'est considéré comme loose
+
+        score = 0
+        _perdu = -10
+        _gagne = 10
+        for i in range(len(self.grid)):
+            if self.lastPlacedToken(i) == player:
+                if self.estPionGagnant(i) and score != _perdu:
+                    score = _gagne
+
+            elif self.lastPlacedToken(i) != None:
+                if self.estPionGagnant(i):
+                    score = _perdu
+
+        return score
+
+
+    def lastPlacedToken(self, positionPion: int):
+        case = 0
+        while case < len(self.grid[positionPion]) and self.grid[positionPion][case] == self._CASE_VIDE:
+            case+=1
+
+        if self.grid[positionPion][case] == self._CASE_VIDE:
+            print("DEBUG lastPlacedToken : pas de pion placé dans cette colonne")
+            return None
+        else :
+            return self.grid[positionPion][case]
