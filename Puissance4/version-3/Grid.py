@@ -233,9 +233,11 @@ class Grid:
         
         return newGrid
 
-
+    '''
+    return an arrays with all possible moves a player can make (all players, since theres no difference in this game)
+    '''
     def genereateAllPlays(self):
-        if self.estRemplis():
+        if self.estRemplis(): # n'est pas supposé arriver je crois
             return []
 
         plays = []
@@ -245,6 +247,10 @@ class Grid:
         
         return plays
 
+    '''
+    Return the game score to a given player, based on his current situation on the grid.
+    currently, just changes based on win or loss.
+    '''
     def evaluate(self, player):
         #il est surement meilleur d'utiliser inf, mais pour l'instant fait sans import math
         #donc pour l'instant : 0 = rien ; -10 = perdu ; 10 = gagne
@@ -265,6 +271,9 @@ class Grid:
         return score
 
 
+    '''
+    Will return the player who last placed a token in a given column.
+    '''
     def lastPlacedToken(self, positionPion: int):
         case = 0
         while case < len(self.grid[positionPion]) and self.grid[positionPion][case] == self._CASE_VIDE:
