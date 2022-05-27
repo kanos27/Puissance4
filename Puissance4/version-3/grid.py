@@ -9,7 +9,6 @@
 # version 2 : retravaillage du code pour être plus adapté à la POO
 
 
-
 class Grid:
     """
     Classe representant la grille de jeu, et les jetons qui s'y situent
@@ -29,7 +28,7 @@ class Grid:
     """
     def __init__(self) -> None:
         #constante d'état pour case vide, pour faciliter la vie en cas de changement de nbr pour vide et joueur
-        self._CASE_VIDE = 0
+        self._CASE_VIDE = "."
 
         self.grid = [[self._CASE_VIDE for i in range(6)] for j in range(7)]
         pass
@@ -60,7 +59,7 @@ class Grid:
         #code actuel : un peu une horreur, à refaire ?
 
         case = 0
-        while case < len(self.grid[positionPion]) and self.grid[positionPion][case] == self._CASE_VIDE :
+        while case < len(self.grid[positionPion])-1 and self.grid[positionPion][case] == self._CASE_VIDE :
             case +=1
             
         if self.grid[positionPion][case] == self._CASE_VIDE:
@@ -252,9 +251,9 @@ class Grid:
     currently, just changes based on win or loss.
     '''
     def evaluate(self, player):
-        #il est surement meilleur d'utiliser inf, mais pour l'instant fait sans import math
-        #donc pour l'instant : 0 = rien ; -10 = perdu ; 10 = gagne
-        #par sécu, si les deux ont win, ce qui n'est pas censé arrivé, c'est considéré comme loose
+        # il est surement meilleur d'utiliser inf, mais pour l'instant fait sans import math
+        # donc pour l'instant : 0 = rien ; -10 = perdu ; 10 = gagne
+        # par sécu, si les deux ont win, ce qui n'est pas censé arrivé, c'est considéré comme loose
 
         score = 0
         _perdu = -10
@@ -276,7 +275,7 @@ class Grid:
     '''
     def lastPlacedToken(self, positionPion: int):
         case = 0
-        while case < len(self.grid[positionPion]) and self.grid[positionPion][case] == self._CASE_VIDE:
+        while case < len(self.grid[positionPion])-1 and self.grid[positionPion][case] == self._CASE_VIDE:
             case+=1
 
         if self.grid[positionPion][case] == self._CASE_VIDE:
@@ -284,3 +283,10 @@ class Grid:
             return None
         else :
             return self.grid[positionPion][case]
+
+
+    def generateSons(self, player):
+        t = []
+        for c in self.genereateAllPlays():
+            t.append(self.placerPion(c, player))
+        return t

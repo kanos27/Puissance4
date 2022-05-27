@@ -5,7 +5,8 @@
 # le premier qui fait un alignement (horizontal, vertical, diagonal) de quatre de ses jetons gagne
 # taille du quadrillage / grille : 7*6 (L*H)
 # version 2 : retravaillage du code pour être plus adapté à la POO
-
+from player import Player
+from grid import Grid
 
 
 class Jeu:
@@ -19,8 +20,8 @@ class Jeu:
         self.curr_grid = Grid()
 
 
-        self.player1 = Player(1)
-        self.player2 = Player(2)
+        self.player1 = Player(0)
+        self.player2 = Player(1)
         self.curr_player = self.player1 # à changer
         pass
 
