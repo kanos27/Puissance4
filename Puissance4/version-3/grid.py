@@ -8,6 +8,8 @@
 # taille du quadrillage / grille : 7*6 (L*H)
 # version 2 : retravaillage du code pour être plus adapté à la POO
 
+from player import Player
+import math
 
 class Grid:
     """
@@ -255,25 +257,144 @@ class Grid:
         # donc pour l'instant : 0 = rien ; -10 = perdu ; 10 = gagne
         # par sécu, si les deux ont win, ce qui n'est pas censé arrivé, c'est considéré comme loose
 
+
+        # on va utiliser un code d'etude totale du terrain,
+        # en y étudiant chaque ligne possible, et chaque colonne
+        # on peux y vérifier l'acces par rapport au reste de la ligne en question
+
+        # on vérifie les enchainements de 1, 2 et 3, et on y regarde si ils sont accessibles, etc...
+        # on y ajoutera ensuite la distance de colonne aux pions suivants,
+        # et la distance maximum théorique au pion.
+        # ensuite, on y additione les différents points calculés
+        # multipliés par des facteurs en fonctions de s'ils sont positifs ou négatifs, en fonction du joueur en cours
+        # et on retourne le score
+
+
+
         score = 0
-        _perdu = -10
-        _gagne = 10
-        for i in range(len(self.grid)):
-            if self.lastPlacedToken(i) == player:
-                if self.estPionGagnant(i) and score != _perdu:
-                    score = _gagne
+        # constante pour quitter quand la partie est finie
+        _perdu = -math.inf
+        _gagne = math.inf
 
-            elif self.lastPlacedToken(i) != None:
-                if self.estPionGagnant(i):
-                    score = _perdu
+        # constante de coefficient pour que les coup bon de nous ou de l'adversaire soit plus ou moins valorisés
+        _coeffBon = 1
+        _coeffMauvais = -1
+        
+        enough = False
 
+        # revue des colonnes :
+        # colones = [], ligne = [][]
+        for colonne in self.grid: # range(len(self.grid)):
+
+            last_case = None
+            suite_len = 1
+            mur = 0
+
+            for case in colonne[::-1] : # range(len(self.grid[colonne]))[::-1]: #pas sur pour le -1
+
+                # ajout et finition de suite
+                if case == last_case:
+                    suite_len += 1
+
+                else :
+                    # finir la dernière suite, et ajouter les points si nécéssaire
+                    if last_case == self._CASE_VIDE:
+                        # cas dans lequel on est un pion après une case vide
+                        # rien à faire à par ne pas le compter comme un mur
+
+                        # reset :
+                        mur = 0
+                        suite_len = 1
+
+                    elif last_case == None:
+                        # cas dans lequel on est le pion après le mur
+                        # rien à faire à par le compter comme un mur
+
+                        # reset :
+                        mur = 1
+                        suite_len = 1
+
+                    elif last_case == player :
+                        # cas dans lequel on finit une suite à nous
+                        # il faut prendre en compte la taille de la suite, les possibles murs autours
+                        # et donner un score en conséquence
+
+                        if case != self._CASE_VIDE:
+                            mur += 1
+
+                        if suite_len == 1 :
+                            #le nombre de mur ne peux en théorie pas être en dessous de 1
+                            if mur == 2 :
+                                score += _coeffBon * 0
+                            elif mur == 1 :
+                                score += _coeffBon * 1
+
+                        elif suite_len == 2 :
+                            if mur == 2 :
+                                score += _coeffBon * 1
+                            elif mur == 1 :
+                                score += _coeffBon * 3
+
+                        elif suite_len == 3 :
+                            if mur == 2 :
+                                score += _coeffBon * 3
+                            elif mur == 1 :
+                                score += _coeffBon * 5
+
+                        else :
+                            score = _gagne
+                            enough = True
+
+                        # reset :
+                        mur = 1
+                        suite_len = 1
+
+                    else :
+                        # cas dans lequel on finit une suite adversaire
+                        # il faut prendre en compte la taille de la suite, les possibles murs autours
+                        # et donner un score en conséquence
+
+                        if case != self._CASE_VIDE:
+                            mur += 1
+
+                        if suite_len == 1 :
+                            #le nombre de mur ne peux en théorie pas être en dessous de 1
+                            if mur == 2 :
+                                score += _coeffMauvais * 0
+                            elif mur == 1 :
+                                score += _coeffMauvais * 1
+
+                        elif suite_len == 2 :
+                            if mur == 2 :
+                                score += _coeffMauvais * 1
+                            elif mur == 1 :
+                                score += _coeffMauvais * 3
+
+                        elif suite_len == 3 :
+                            if mur == 2 :
+                                score += _coeffMauvais * 3
+                            elif mur == 1 :
+                                score += _coeffMauvais * 5
+
+                        else :
+                            score = _perdu
+                            enough = True
+                            
+                        #reset :
+                        mur = 1
+                        suite_len = 1
+
+
+
+                last_case = case
+        
         return score
 
 
     '''
-    Will return the player who last placed a token in a given column.
+    Will return a tuple containing the position and the player who last placed a token in a given column.
     '''
-    def lastPlacedToken(self, positionPion: int):
+    def lastPlacedToken(self, positionPion: int) -> tuple:
         case = 0
         while case < len(self.grid[positionPion])-1 and self.grid[positionPion][case] == self._CASE_VIDE:
             case+=1
@@ -282,7 +403,7 @@ class Grid:
             print("DEBUG lastPlacedToken : pas de pion placé dans cette colonne")
             return None
         else :
-            return self.grid[positionPion][case]
+            return (case, self.grid[positionPion][case])
 
 
     def generateSons(self, player):
