@@ -521,6 +521,79 @@ class Grid:
 
 
 
+        # deuxième passage
+        # beaucoup de copié collé pour le moment
+
+        for ind_ligne in range(len(self.grid -1)): # je met -1 pour que la dernière diagonal ne soit pas prise en compte, comme calculée avant
+
+            last_case = None
+            suite_len = 1
+            mur = 0
+
+            for ind_diag in range(ind_ligne) :
+
+                case = self.grid[ind_diag][ len(self.grid[0]) - ind_diag]
+
+                # ajout et finition de suite
+                if case == last_case:
+                    suite_len += 1
+
+                else :
+                    # finir la dernière suite, et ajouter les points si nécéssaire
+                    # puis reset pour la suivante
+                    if last_case == self._CASE_VIDE:
+                        # cas dans lequel on est un pion après une case vide
+                        # rien à faire à par ne pas le compter comme un mur
+
+                        # reset :
+                        mur = 0
+                        suite_len = 1
+
+                    elif last_case == None:
+                        # cas dans lequel on est le pion après le mur
+                        # rien à faire à par le compter comme un mur
+
+                        # reset :
+                        mur = 1
+                        suite_len = 1
+
+                    elif last_case == player :
+                        # cas dans lequel on finit une suite à nous
+                        # il faut prendre en compte la taille de la suite, les possibles murs autours
+                        # et donner un score en conséquence
+
+                        if case != self._CASE_VIDE:
+                            mur += 1
+
+
+
+                        score += self.point_giver(suite_len, mur, _coeffBon, _coeffDiag)
+
+
+                        # reset :
+                        mur = 1
+                        suite_len = 1
+
+                    else :
+                        # cas dans lequel on finit une suite adversaire
+                        # il faut prendre en compte la taille de la suite, les possibles murs autours
+                        # et donner un score en conséquence
+
+                        if case != self._CASE_VIDE:
+                            mur += 1
+
+                        score += self.point_giver(suite_len, mur, _coeffMauvais, _coeffDiag)
+                            
+                        #reset :
+                        mur = 1
+                        suite_len = 1
+
+
+
+                last_case = case
+
+
+
         return score
 
     
