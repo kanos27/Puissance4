@@ -280,6 +280,11 @@ class Grid:
         _coeffBon = 1
         _coeffMauvais = -1
         
+        # constante de coefficient pour les lignes, colonnes et diagonales
+        _coeffColonne = 1
+        _coeffLigne = 1
+        _coeffDiag = 1
+
         enough = False
 
         # revue des colonnes :
@@ -298,6 +303,7 @@ class Grid:
 
                 else :
                     # finir la dernière suite, et ajouter les points si nécéssaire
+                    # puis reset pour la suivante
                     if last_case == self._CASE_VIDE:
                         # cas dans lequel on est un pion après une case vide
                         # rien à faire à par ne pas le compter comme un mur
@@ -322,28 +328,9 @@ class Grid:
                         if case != self._CASE_VIDE:
                             mur += 1
 
-                        if suite_len == 1 :
-                            #le nombre de mur ne peux en théorie pas être en dessous de 1
-                            if mur == 2 :
-                                score += _coeffBon * 0
-                            elif mur == 1 :
-                                score += _coeffBon * 1
 
-                        elif suite_len == 2 :
-                            if mur == 2 :
-                                score += _coeffBon * 1
-                            elif mur == 1 :
-                                score += _coeffBon * 3
+                        score += self.point_giver(suite_len, mur, _coeffBon, _coeffColonne)
 
-                        elif suite_len == 3 :
-                            if mur == 2 :
-                                score += _coeffBon * 3
-                            elif mur == 1 :
-                                score += _coeffBon * 5
-
-                        else :
-                            score = _gagne
-                            enough = True
 
                         # reset :
                         mur = 1
@@ -357,29 +344,12 @@ class Grid:
                         if case != self._CASE_VIDE:
                             mur += 1
 
-                        if suite_len == 1 :
-                            #le nombre de mur ne peux en théorie pas être en dessous de 1
-                            if mur == 2 :
-                                score += _coeffMauvais * 0
-                            elif mur == 1 :
-                                score += _coeffMauvais * 1
 
-                        elif suite_len == 2 :
-                            if mur == 2 :
-                                score += _coeffMauvais * 1
-                            elif mur == 1 :
-                                score += _coeffMauvais * 3
 
-                        elif suite_len == 3 :
-                            if mur == 2 :
-                                score += _coeffMauvais * 3
-                            elif mur == 1 :
-                                score += _coeffMauvais * 5
+                        score += self.point_giver(suite_len, mur, _coeffMauvais, _coeffColonne)
 
-                        else :
-                            score = _perdu
-                            enough = True
-                            
+
+
                         #reset :
                         mur = 1
                         suite_len = 1
@@ -388,8 +358,209 @@ class Grid:
 
                 last_case = case
         
+        if enough :
+            return score
+
+        # revue des ligne :
+        # colones = [], ligne = [][]
+
+        # on va utiliser len pour le moment, comme on peut pas vraiment saisir la ligne
+        for num_ligne in range(len(self.grid[1])): # range(len(self.grid)):
+
+            last_case = None
+            suite_len = 1
+            mur = 0
+
+            for ind_ligne in range(len(self.grid)) :
+
+                case = self.grid[ind_ligne][num_ligne]
+
+                # ajout et finition de suite
+                if case == last_case:
+                    suite_len += 1
+
+                else :
+                    # finir la dernière suite, et ajouter les points si nécéssaire
+                    # puis reset pour la suivante
+                    if last_case == self._CASE_VIDE:
+                        # cas dans lequel on est un pion après une case vide
+                        # rien à faire à par ne pas le compter comme un mur
+
+                        # reset :
+                        mur = 0
+                        suite_len = 1
+
+                    elif last_case == None:
+                        # cas dans lequel on est le pion après le mur
+                        # rien à faire à par le compter comme un mur
+
+                        # reset :
+                        mur = 1
+                        suite_len = 1
+
+                    elif last_case == player :
+                        # cas dans lequel on finit une suite à nous
+                        # il faut prendre en compte la taille de la suite, les possibles murs autours
+                        # et donner un score en conséquence
+
+                        if case != self._CASE_VIDE:
+                            mur += 1
+
+
+
+                        score += self.point_giver(suite_len, mur, _coeffBon, _coeffLigne)
+
+
+                        # reset :
+                        mur = 1
+                        suite_len = 1
+
+                    else :
+                        # cas dans lequel on finit une suite adversaire
+                        # il faut prendre en compte la taille de la suite, les possibles murs autours
+                        # et donner un score en conséquence
+
+                        if case != self._CASE_VIDE:
+                            mur += 1
+
+                        score += self.point_giver(suite_len, mur, _coeffMauvais, _coeffLigne)
+                            
+                        #reset :
+                        mur = 1
+                        suite_len = 1
+
+
+
+                last_case = case
+
+
+
+
+        # revue des diagonales :
+        # colones = [], ligne = [][]
+
+        # c'est du 7 sur 6, donc pas de diagonale centrale à proprement parler, mais une diagonle commune
+        # pour les diagonales, en deux étapes ?
+        # genre d'abord par rapoort à colonne de droite, puis ligne du bas ?
+        # 0x11111 puis  1x00000
+        # 00x1111   	11x0000
+        # 000x111       111x000
+        # 0000x11       1111x00
+        # 00000x1       11111x0
+        # 000000x       111111x
+
+        # avec x la diag commune, supprimée au deuxieme passage
+
+        for ind_colonne in range(len(self.grid[-1])): # je met [-1] pour bien qu'on viualise que l'on part de la deuxième colonne
+
+            last_case = None
+            suite_len = 1
+            mur = 0
+
+            for ind_diag in range(ind_colonne) :
+
+                case = self.grid[-1 -ind_diag][ - ind_diag]
+
+                # ajout et finition de suite
+                if case == last_case:
+                    suite_len += 1
+
+                else :
+                    # finir la dernière suite, et ajouter les points si nécéssaire
+                    # puis reset pour la suivante
+                    if last_case == self._CASE_VIDE:
+                        # cas dans lequel on est un pion après une case vide
+                        # rien à faire à par ne pas le compter comme un mur
+
+                        # reset :
+                        mur = 0
+                        suite_len = 1
+
+                    elif last_case == None:
+                        # cas dans lequel on est le pion après le mur
+                        # rien à faire à par le compter comme un mur
+
+                        # reset :
+                        mur = 1
+                        suite_len = 1
+
+                    elif last_case == player :
+                        # cas dans lequel on finit une suite à nous
+                        # il faut prendre en compte la taille de la suite, les possibles murs autours
+                        # et donner un score en conséquence
+
+                        if case != self._CASE_VIDE:
+                            mur += 1
+
+
+
+                        score += self.point_giver(suite_len, mur, _coeffBon, _coeffDiag)
+
+
+                        # reset :
+                        mur = 1
+                        suite_len = 1
+
+                    else :
+                        # cas dans lequel on finit une suite adversaire
+                        # il faut prendre en compte la taille de la suite, les possibles murs autours
+                        # et donner un score en conséquence
+
+                        if case != self._CASE_VIDE:
+                            mur += 1
+
+                        score += self.point_giver(suite_len, mur, _coeffMauvais, _coeffDiag)
+                            
+                        #reset :
+                        mur = 1
+                        suite_len = 1
+
+
+
+                last_case = case
+
+
+
         return score
 
+    
+    def point_giver(suite_len, mur, coeffJ, coeffType):
+         # cas dans lequel on finit une suite à nous
+        # il faut prendre en compte la taille de la suite, les possibles murs autours
+        # et donner un score en conséquence
+
+        score = 0
+
+        if suite_len == 1 :
+            if mur == 2 :
+                score += coeffJ * coeffType * 0
+            elif mur == 1 :
+                score += coeffJ * coeffType * 1
+            elif mur == 0 : 
+                score += coeffJ * coeffType * 3
+
+        elif suite_len == 2 :
+            if mur == 2 :
+                score += coeffJ * coeffType * 1
+            elif mur == 1 :
+                score += coeffJ * coeffType * 3
+            elif mur == 0 :
+                score += coeffJ * coeffType * 5
+
+        elif suite_len == 3 :
+            if mur == 2 :
+                score += coeffJ * coeffType * 3
+            elif mur == 1 :
+                score += coeffJ * coeffType * 5
+            elif mur == 0 :
+                score += coeffJ * coeffType * 7
+
+        # a regler et à ajouter au prog
+        else :
+            score = coeffJ * math.inf # _gagne
+            enough = True
+
+        return score
 
     '''
     Will return a tuple containing the position and the player who last placed a token in a given column.
